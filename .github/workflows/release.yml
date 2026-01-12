@@ -32,7 +32,7 @@ jobs:
             os: noble
             type: mate
           - device: opi3b
-            vendor: edge
+            vendor: vendor
             os: noble
             type: mate
           - device: opi3b
@@ -40,7 +40,7 @@ jobs:
             os: plucky
             type: mate
           - device: opi3b
-            vendor: vendor
+            vendor: edge
             os: plucky
             type: mate
           - device: opi3b
