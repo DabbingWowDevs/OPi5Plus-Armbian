@@ -23,6 +23,7 @@ jobs:
     strategy:
       matrix:
         device: [opi3b]
+        vendor: [edge, vendor]
         os: [bookworm, trixie, noble, plucky]
         type: [minimal, cinnamon, gnome, i3-wm, kde-neon, kde-plasma, mate, xfce]
         include:
@@ -77,19 +78,19 @@ jobs:
 
           mkdir release
 
-      - name: Build armbian-${{ matrix.device }}-${{ matrix.os }}-${{ matrix.type }}.img
+      - name: Build armbian-${{ matrix.device }}-${{ matrix.vendor }}-${{ matrix.os }}-${{ matrix.type }}.img
         run: |
-          image=${{ matrix.device }}-${{ matrix.os }}-${{ matrix.type }}
+          image=${{ matrix.device }}-${{ matrix.vendor }}-${{ matrix.os }}-${{ matrix.type }}
           sleep $(( RANDOM % 300 ))
           ./compile.sh ${image} || exit 1
           find output -name "*.img" -exec cp -vf {} release/armbian-${image}.img \;
           
-      - name: Compress armbian-${{ matrix.device }}-${{ matrix.os }}-${{ matrix.type }}.img
+      - name: Compress armbian-${{ matrix.device }}-${{ matrix.vendor }}-${{ matrix.os }}-${{ matrix.type }}.img
         run: |
           find release -name "*.img" -exec xz -vz -T0 -6 --extreme {} \;
           ls release
 
-      - name: Release armbian-${{ matrix.device }}-${{ matrix.os }}-${{ matrix.type }}.img.xz
+      - name: Release armbian-${{ matrix.device }}-${{ matrix.vendor }}-${{ matrix.os }}-${{ matrix.type }}.img.xz
         uses: softprops/action-gh-release@v2
         with:
           files: release/*.img.xz
