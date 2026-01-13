@@ -97,19 +97,22 @@ jobs:
           ls -l
           sleep 10
 
+      - name: Set random timeout for possible retry
+        id: set_timeout
+        run: echo "timeout_seconds=$(shuf -i 5-145 -n 1)" >> $GITHUB_OUTPUT
+
       - name: Build armbian-${{ matrix.device }}-${{ matrix.vendor }}-${{ matrix.os }}-${{ matrix.type }}.img
         # run: |
         #   image=${{ matrix.device }}-${{ matrix.vendor }}-${{ matrix.os }}-${{ matrix.type }}
         #   sleep $(( RANDOM % 300 ))
         #   ./compile.sh EXPERT=yes ${image} || exit 1
         #   find output -name "*.img" -exec cp -vf {} release/ \;
-        uses: google-github-actions/retry-action@v0
+        uses: nick-invision/retry@v2
         with:
-          initial_delay_seconds: 10
+          timeout_seconds: ${{ steps.set_timeout.outputs.timeout_seconds }}
           max_attempts: 3
           command: |
             image=${{ matrix.device }}-${{ matrix.vendor }}-${{ matrix.os }}-${{ matrix.type }}
-            # sleep $(( RANDOM % 300 ))
             ./compile.sh EXPERT=yes ${image} || exit 1
             find output -name "*.img" -exec cp -vf {} release/ \;
 
