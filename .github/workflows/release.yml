@@ -111,14 +111,12 @@ jobs:
             extension=${oldfilename##*.}
             oldfilename=$(echo ${oldfilename%.*}|cut -d/ -f2-)
             echo Filename is ${oldfilename}.${extension}
-            filename=${oldfilename}
             AVer=$(echo $filename | sed 's/Armbian-unofficial_\([^_]*\).*/\1/')
             echo 
             echo AVer: $AVer
-            KVer=${{ matrix.vendor }}-$(echo $filename | sed "s/.*_${{ matrix.vendor }}_\([^_]*\).*/\1/")
-            echo 
+            KVer=${{ matrix.vendor }}-$(echo $filename | sed "s/.*_${{ matrix.vendor }}_\([^_]*\).*/\1/") 
             echo KVer: $KVer
-            filename=$(echo ${filename}-${AVer}-${KVer}-${{ needs.get_build_date.outputs.build_datedash }})
+            filename=$(echo ${{ matrix.device }}-${{ matrix.os }}-${{ matrix.type }}-${AVer}-${KVer}-${{ needs.get_build_date.outputs.build_datedash }})
             echo New Filename is ${filename}.${extension}
             mv -vf "${oldfilename}.${extension}" "${filename}.${extension}"
           done
