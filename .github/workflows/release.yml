@@ -25,7 +25,7 @@ jobs:
         device: [opi3b]
         vendor: [edge, vendor]
         os: [bookworm, trixie, noble, plucky]
-        type: [minimal, cinnamon, gnome, i3-wm, kde-neon, kde-plasma, mate, xfce]
+        type: [minimal, cinnamon, gnome, i3-wm, mate, xfce] # kde-neon, kde-plasma,
         exclude:
           - device: opi3b
             vendor: edge
@@ -43,14 +43,6 @@ jobs:
             vendor: edge
             os: plucky
             type: mate
-          - device: opi3b
-            vendor: edge
-            os: bookworm
-            type: kde-neon
-          - device: opi3b
-            vendor: vendor
-            os: bookworm
-            type: kde-neon
       fail-fast: false
     runs-on: ubuntu-latest
     needs: get_build_date
