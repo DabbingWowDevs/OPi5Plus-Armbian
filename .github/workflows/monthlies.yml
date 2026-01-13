@@ -173,6 +173,7 @@ jobs:
     runs-on: ubuntu-latest
     needs: [get_build_date, build]
     steps:
+      - uses: actions/checkout@v4
       - name: Update draft release body
         run: |
           tag="opi3b-v${{ needs.get_build_date.outputs.build_date }}"
