@@ -19,7 +19,8 @@ jobs:
       - name: Set build date
         id: set_date
         run:  |
-          echo "datedash=$(date +%Y-%m-%d-%H%M%S)" >> $GITHUB_OUTPUT 
+          export datedash=$(date +%Y-%m-%d-%H%M%S)
+          echo "datedash=$datedash" >> $GITHUB_OUTPUT 
           echo "date=$(echo $datedash | sed 's|\-||g')" >> $GITHUB_OUTPUT 
 
   build:
@@ -97,9 +98,13 @@ jobs:
           ls -l
           #sleep 10
 
-      - name: Set random timeout for possible retry
+      - name: Set retry_wait_seconds for possible retry
         id: set_timeout
-        run: echo "timeout_seconds=$(shuf -i 5-145 -n 1)" >> $GITHUB_OUTPUT
+        run: |
+          export retry_wait_seconds=$(shuf -i 5-145 -n 1)
+          echo "retry_wait_seconds=$retry_wait_seconds" >> $GITHUB_OUTPUT
+          echo retry_wait_seconds=$retry_wait_seconds
+
 
       - name: Build armbian-${{ matrix.device }}-${{ matrix.vendor }}-${{ matrix.os }}-${{ matrix.type }}.img
         # run: |
@@ -110,10 +115,11 @@ jobs:
         uses: nick-invision/retry@v2
         with:
           timeout_minutes: 300
-          retry_wait_seconds: ${{ steps.set_timeout.outputs.timeout_seconds }}
-          max_attempts: 3
+          retry_wait_seconds: ${{ steps.set_timeout.outputs.retry_wait_seconds }}
+          max_attempts: 5
           command: |
             image=${{ matrix.device }}-${{ matrix.vendor }}-${{ matrix.os }}-${{ matrix.type }}
+            sleep ${{ steps.set_timeout.outputs.retry_wait_seconds }}
             ./compile.sh EXPERT=yes ${image} || exit 1
             find output -name "*.img" -exec cp -vf {} release/ \;
 
@@ -142,7 +148,7 @@ jobs:
           
       - name: Compress armbian-${{ matrix.device }}-${{ matrix.os }}-${{ matrix.type }}.img
         run: |
-          find release -name "*.img" -exec xz -vz -T0 -7 {} \;  
+          find release -name "*.img" -exec xz -vz -T0 -1 {} \;  
           ls release #-6 --extreme
 
       - name: Release armbian-${{ matrix.device }}-${{ matrix.os }}-${{ matrix.type }}.img.xz
