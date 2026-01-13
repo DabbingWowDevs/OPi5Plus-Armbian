@@ -101,6 +101,10 @@ jobs:
           ./compile.sh EXPERT=yes ${image} || exit 1
           find output -name "*.img" -exec cp -vf {} release/ \;
 
+      - name: Generate unique ID
+        id: gen_id
+        run: echo "unique_id=$(uuidgen)" >> $GITHUB_OUTPUT
+
       - name: add version and date
         id: set_ver
         run: |
@@ -117,8 +121,7 @@ jobs:
             echo AVer: $AVer
             KVer=${{ matrix.vendor }}-$(echo $oldfilename | sed "s/.*_${{ matrix.vendor }}_\([^_]*\).*/\1/") 
             echo KVer: $KVer
-            echo "AVer=$AVer" >> $GITHUB_OUTPUT
-            echo "KVer${{ matrix.vendor }}=$KVer" >> $GITHUB_OUTPUT 
+ 
             filename=armbian-$(echo ${{ matrix.device }}-${{ matrix.os }}-${{ matrix.type }}-${AVer}-${KVer}-${{ needs.get_build_date.outputs.build_datedash }})
             echo New Filename is ${filename}.${extension}
             mv -vf "${oldfilename}.${extension}" "${filename}.${extension}"
@@ -126,12 +129,12 @@ jobs:
           cd ..
           ls release
           
-      - name: Compress armbian-${{ matrix.device }}-${{ matrix.os }}-${{ matrix.type }}-${AVer}-${KVer}-${{ needs.get_build_date.outputs.build_datedash }}.img
+      - name: Compress armbian-${{ matrix.device }}-${{ matrix.os }}-${{ matrix.type }}.img
         run: |
           find release -name "*.img" -exec xz -vz -T0 -3 {} \;  
           ls release #-6 --extreme
 
-      - name: Release armbian-${{ matrix.device }}-${{ matrix.os }}-${{ matrix.type }}-${AVer}-${KVer}-${{ needs.get_build_date.outputs.build_datedash }}.img.xz
+      - name: Release armbian-${{ matrix.device }}-${{ matrix.os }}-${{ matrix.type }}.img.xz
         uses: softprops/action-gh-release@v2
         with:
           files: release/*.img.xz
@@ -140,8 +143,4 @@ jobs:
           fail_on_unmatched_files: true
           name: build ${{ matrix.device }}-${{ needs.get_build_date.outputs.build_datedash }}
           tag_name: ${{ matrix.device }}-v${{ needs.get_build_date.outputs.build_date }}
-          body: |
-            Armbian Version: ${{ steps.set_ver.outputs.AVer }}
-            Kernel Version: 
-              - Edge: ${{ steps.set_ver.outputs.KVeredge }}
-              - Vendor: ${{ steps.set_ver.outputs.KVervendor }}
+
