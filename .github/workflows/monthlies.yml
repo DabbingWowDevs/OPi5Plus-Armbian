@@ -19,9 +19,12 @@ jobs:
       - name: Set build date
         id: set_date
         run:  |
-          export datedash=$(date +%Y-%m-%d-%H%M%S)
-          echo "datedash=$datedash" >> $GITHUB_OUTPUT 
-          echo "date=$(echo $datedash | sed 's|\-||g')" >> $GITHUB_OUTPUT 
+          export datenow=$(TZ=America/New_York date +%Y-%m-%d-%H%M%S)
+          echo "datedash=$(echo $datenow)" >> $GITHUB_OUTPUT
+          echo "date=$(echo $datenow | sed 's|\-||g')" >> $GITHUB_OUTPUT
+          echo Date and time is $datenow EST
+          
+          
 
   build:
     strategy:
@@ -116,7 +119,7 @@ jobs:
         # run: |
         #   image=${{ matrix.device }}-${{ matrix.vendor }}-${{ matrix.os }}-${{ matrix.type }}
         #   sleep $(( RANDOM % 300 ))
-        #   ./compile.sh EXPERT=yes ${image} || exit 1
+        #   ./compile.sh EXPERT=yes  ${image} || exit 1
         #   find output -name "*.img" -exec cp -vf {} release/ \;
         uses: nick-invision/retry@v2
         with:
@@ -125,8 +128,8 @@ jobs:
           max_attempts: 5
           command: |
             image=${{ matrix.device }}-${{ matrix.vendor }}-${{ matrix.os }}-${{ matrix.type }}
-            sleep ${{ steps.set_timeout.outputs.retry_wait_seconds }}
-            ./compile.sh EXPERT=yes ${image} || exit 1
+            #sleep ${{ steps.set_timeout.outputs.retry_wait_seconds }}
+            ./compile.sh EXPERT=yes PREFER_DOCKER=no ${image} || exit 1
             find output -name "*.img" -exec cp -vf {} release/ \;
 
       - name: add version and date
