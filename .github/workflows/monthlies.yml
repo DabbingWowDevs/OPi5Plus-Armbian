@@ -197,7 +197,8 @@ jobs:
               vendor_kver=$kver
             fi
           done
-          body="Armbian Version: $AVer
+          body="Image Picker: https://dabbingwowdevs.github.io/OPi3b-Armbian/
+          Armbian Version: $AVer
           Kernel Versions:
           - Edge: $edge_kver
           - Vendor: $vendor_kver"
