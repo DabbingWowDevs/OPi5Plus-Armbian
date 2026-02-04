@@ -36,7 +36,7 @@ jobs:
         device: [orangepi5-plus]
         kernel: [current, edge, vendor]
         os: [trixie, noble, plucky]
-        type: [minimal, cinnamon, gnome, i3-wm, mate, xfce] # kde-neon, kde-plasma,
+        type: [minimal, cinnamon, gnome, kde-plasma, xfce] # kde-neon, kde-plasma, i3-wm, mate
         # exclude:
         #   - device: opi3b
         #     kernel: edge
@@ -120,9 +120,10 @@ jobs:
         uses: actions/cache@v4
         with:
           path: ~/.ccache
-          key: ccache-${{ matrix.kernel }}-${{ matrix.os }}
+          # key: ccache-${{ matrix.kernel }}-${{ matrix.os }}
+          key: ccache-${{ matrix.kernel }}
           restore-keys: |
-            ccache-${{ matrix.kernel }}-
+            ccache-${{ matrix.kernel }}
             ccache-
 
       - name: Build armbian-${{ matrix.device }}-${{ matrix.kernel }}-${{ matrix.os }}-${{ matrix.type }}.img
