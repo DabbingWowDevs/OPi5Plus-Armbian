@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>OPi3b-Armbian Image Picker</title>
+  <title>OPi5Plus-Armbian Image Picker</title>
   <style>
     body {
       padding: 25px;
@@ -149,7 +149,7 @@
   </style>
 </head>
 <body>
-  <h2>OPi3b-Armbian Image Picker</h2>
+  <h2>OPi5Plus-Armbian Image Picker</h2>
   <p>Select the OS, kernel, and desktop environment for the Armbian image.</p>
   <p>The image name and download links will be generated below.</p>
 
@@ -235,7 +235,7 @@
 
     function getRepoInfo() {
       const owner = "DabbingWowDevs";
-      const repo = "OPi3b-Armbian";
+      const repo = "OPi5Plus-Armbian";
       return { owner, repo };
     }
 
@@ -296,7 +296,7 @@
       const kernel = document.querySelector('input[name="kernel"]:checked').value;
       const type = document.querySelector('input[name="type"]:checked').value;
 
-      const resultString = `armbian-opi3b-${os}-${type}-*-${kernel}-*.img.xz`;
+      const resultString = `armbian-orangepi5-plus-${os}-${type}-*-${kernel}-*.img.xz`;
       document.getElementById("result").textContent = resultString;
 
       fetchAndDisplayAssets();
