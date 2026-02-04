@@ -1,13 +1,12 @@
 #!/bin/bash
 #image=${{ matrix.device }}-${{ matrix.kernel }}-${{ matrix.os }}-${{ matrix.type }}
             
-device=$(echo "$1" | cut -d'-' -f1)
-kernel=$(echo "$1" | cut -d'-' -f2)
-os=$(echo "$1" | cut -d'-' -f3)
-release=$(echo "$1" | cut -d'-' -f4)
-type=$(echo "$1" | cut -d'-' -f2)
+device=$1
+kernel=$2
+os=$3
+type=$4
 
-configfile="userpatches/config-${device}-${kernel}-${os}-${release}-${type}.conf"
+configfile="userpatches/config-${device}-${kernel}-${os}-${type}.conf"
 mkdir userpatches
 cat << EOF > $configfile
 KERNEL_CONFIGURE=no
@@ -18,7 +17,7 @@ BOARD=${device}
 
 BRANCH=${kernel}
 
-RELEASE=${release}
+RELEASE=${os}
 EOF
 
 
