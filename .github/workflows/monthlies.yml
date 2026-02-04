@@ -157,7 +157,7 @@ jobs:
             image=${{ matrix.device }}-${{ matrix.kernel }}-${{ matrix.os }}-${{ matrix.type }}
             #sleep ${{ steps.set_timeout.outputs.retry_wait_seconds }}
             export CCACHE=1
-            ./compile.sh USE_CCACHE=yes EXPERT=yes PREFER_DOCKER=no ${image} 
+            ./compile.sh USE_CCACHE=yes EXPERT=yes PREFER_DOCKER=no ${image} || true
             find output -name "*.img" -exec mv -vf {} release/ \;
             ls release/*.img || exit 1
 
