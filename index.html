@@ -155,12 +155,7 @@
 
   <h3>Select OS</h3>
   <label>
-    <input type="radio" class="styled myRadio" name="os" value="bookworm" checked>
-    <span class="custom-radio"></span>
-    Debian 12 Bookworm 
-  </label><br>
-  <label>
-    <input type="radio" class="styled myRadio" name="os" value="trixie">
+    <input type="radio" class="styled myRadio" name="os" value="trixie" checked>
     <span class="custom-radio"></span>
     Debian 13 Trixie
   </label><br>
@@ -176,6 +171,11 @@
   </label><br><br>
 
   <h3>Select Kernel</h3>
+  <label>
+    <input type="radio" class="styled myRadio" name="kernel" value="current">
+    <span class="custom-radio"></span>
+    Current <span id="currentVersion"></span>
+  </label><br>
   <label>
     <input type="radio" class="styled myRadio" name="kernel" value="edge" checked>
     <span class="custom-radio"></span>
@@ -203,10 +203,10 @@
     <span class="custom-radio"></span>
     GNOME
   </label><br>
-  <label>
-    <input type="radio" class="styled myRadio" name="type" value="i3-wm">
+    <label>
+    <input type="radio" class="styled myRadio" name="type" value="kde-plasma">
     <span class="custom-radio"></span>
-    i3-wm
+    KDE-Plasma (Ubuntu only)
   </label><br>
   <label>
     <input type="radio" class="styled myRadio" name="type" value="mate">
@@ -249,12 +249,15 @@
         const body = data.body || "";
 
         // Parse kernel versions from release body
+        const currentMatch = body.match(/- Current: ([\S]+)/);
         const edgeMatch = body.match(/- Edge: ([\S]+)/);
         const vendorMatch = body.match(/- Vendor: ([\S]+)/);
 
+        const currentVersion = currentMatch ? currentMatch[1] : "Unknown";
         const edgeVersion = edgeMatch ? edgeMatch[1] : "Unknown";
         const vendorVersion = vendorMatch ? vendorMatch[1] : "Unknown";
 
+        document.getElementById("currentVersion").textContent = `(${currentVersion})`;
         document.getElementById("edgeVersion").textContent = `(${edgeVersion})`;
         document.getElementById("vendorVersion").textContent = `(${vendorVersion})`;
       } catch (e) {
