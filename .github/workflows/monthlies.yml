@@ -52,18 +52,6 @@ jobs:
             type: kde-neon
           - device: orangepi5-plus
             kernel: current
-            os: plucky
-            type: kde-neon
-          - device: orangepi5-plus
-            kernel: edge
-            os: plucky
-            type: kde-neon
-          - device: orangepi5-plus
-            kernel: vendor
-            os: plucky
-            type: kde-neon
-          - device: orangepi5-plus
-            kernel: current
             os: trixie
             type: mate
           - device: orangepi5-plus
