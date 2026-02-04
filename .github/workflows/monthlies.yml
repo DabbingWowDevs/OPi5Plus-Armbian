@@ -36,24 +36,43 @@ jobs:
         device: [orangepi5-plus]
         kernel: [current, edge, vendor]
         os: [trixie, noble, plucky]
-        type: [minimal, cinnamon, gnome, kde-plasma, xfce] # kde-neon, kde-plasma, i3-wm, mate
+        type: [cinnamon, gnome, kde-plasma, xfce] # minimal, kde-neon, kde-plasma, i3-wm, mate
+        include:
+          - device: orangepi5-plus
+            kernel: [current, edge, vendor]
+            os: [noble, plucky]
+            type: kde-neon
+          - device: orangepi5-plus
+            kernel: [current, edge, vendor]
+            os: trixie
+            type: mate
+
         # exclude:
-        #   - device: opi3b
+        #   - device: orangepi5-plus
+        #     kernel: current
+        #     os: noble
+        #     type: mate
+        #   - device: orangepi5-plus
+        #     kernel: current
+        #     os: plucky
+        #     type: mate
+        #   - device: orangepi5-plus
         #     kernel: edge
         #     os: noble
         #     type: mate
-        #   - device: opi3b
-        #     kernel: vendor
-        #     os: noble
-        #     type: mate
-        #   - device: opi3b
+        #   - device: orangepi5-plus
         #     kernel: edge
         #     os: plucky
         #     type: mate
-        #   - device: opi3b
+        #   - device: orangepi5-plus
+        #     kernel: vendor
+        #     os: noble
+        #     type: mate
+        #   - device: orangepi5-plus
         #     kernel: vendor
         #     os: plucky
         #     type: mate
+          
       fail-fast: false
     runs-on: ubuntu-latest
     needs: get_build_date
@@ -131,7 +150,7 @@ jobs:
         with:
           timeout_minutes: 300
           retry_wait_seconds: ${{ steps.set_timeout.outputs.retry_wait_seconds }}
-          max_attempts: 5
+          max_attempts: 3
           command: |
             image=${{ matrix.device }}-${{ matrix.kernel }}-${{ matrix.os }}-${{ matrix.type }}
             #sleep ${{ steps.set_timeout.outputs.retry_wait_seconds }}
