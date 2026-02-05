@@ -36,41 +36,20 @@ jobs:
   build:
     strategy:
       matrix:
-        # test release
         device: [orangepi5-plus]
-        kernel: [current]
-        os: [trixie noble plucky]
-        type: [minimal] 
+        kernel: [current, edge, vendor]
+        os: [trixie, noble, plucky]
+        type: [minimal cinnamon gnome kde-plasma xfce] # minimal, kde-neon, kde-plasma, i3-wm, mate
+        include:
+          - device: orangepi5-plus
+            kernel: current edge vendor
+            os: noble
+            type: kde-neon
+          - device: orangepi5-plus
+            kernel: current edge vendor
+            os: trixie
+            type: mate
 
-        # device: [orangepi5-plus]
-        # kernel: [current, edge, vendor]
-        # os: [trixie noble plucky]
-        # type: [cinnamon, gnome, kde-plasma, minimal, xfce] # minimal, kde-neon, kde-plasma, i3-wm, mate
-        # include:
-        #   - device: orangepi5-plus
-        #     kernel: current
-        #     os: noble
-        #     type: kde-neon
-        #   - device: orangepi5-plus
-        #     kernel: edge
-        #     os: noble
-        #     type: kde-neon
-        #   - device: orangepi5-plus
-        #     kernel: vendor
-        #     os: noble
-        #     type: kde-neon
-        #   - device: orangepi5-plus
-        #     kernel: current
-        #     os: trixie
-        #     type: mate
-        #   - device: orangepi5-plus
-        #     kernel: edge
-        #     os: trixie
-        #     type: mate
-        #   - device: orangepi5-plus
-        #     kernel: vendor
-        #     os: trixie
-        #     type: mate
           
       fail-fast: false
     runs-on: ubuntu-latest
@@ -180,16 +159,16 @@ jobs:
           echo "retry_wait_seconds=$retry_wait_seconds" >> $GITHUB_OUTPUT
           echo retry_wait_seconds=$retry_wait_seconds
 
-      - name: Cache ccache
-        uses: actions/cache@v4
-        with:
-          path: ~/.ccache
-          # key: ccache-${{ matrix.kernel }}-${{ matrix.os }}
-          # key: ccache-${{ matrix.kernel }}
-          key: ccache-${{ matrix.device }}
-          restore-keys: |
-            ccache-${{ matrix.device }}
-            ccache-
+      # - name: Cache ccache
+      #   uses: actions/cache@v4
+      #   with:
+      #     path: ~/.ccache
+      #     # key: ccache-${{ matrix.kernel }}-${{ matrix.os }}
+      #     # key: ccache-${{ matrix.kernel }}
+      #     key: ccache-${{ matrix.device }}
+      #     restore-keys: |
+      #       ccache-${{ matrix.device }}
+      #       ccache-
 
       - name: Build armbian-${{ matrix.device }}-${{ matrix.kernel }}-[${{ matrix.os }}]-${{ matrix.type }}.img
         # uses: nick-invision/retry@v2
@@ -211,7 +190,8 @@ jobs:
             for type in ${{ matrix.type }}; do
             export type=$type
               export image=${{ matrix.device }}-${kernel}-${os}-${type}
-              ./compile.sh USE_CCACHE=yes EXPERT=yes PREFER_DOCKER=no ${image} || exit 1
+              # USE_CCACHE=yes
+              ./compile.sh EXPERT=yes ${image} || exit 1
               outputfilerelpath=$(find output -name "*.img" -exec echo -n {} \;)
               outputfilename=$(basename -z $outputfilerelpath .img)
               outputfilepath=$(realpath -z $outputfilerelpath)
