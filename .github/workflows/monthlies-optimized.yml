@@ -216,7 +216,8 @@ jobs:
               cd release/
               ls -l
               echo "Compressing ${outputfilename}.img to ${outputfilename}.img.xz"
-              xz -vz -T0 -1 ${outputfilename}.img
+              xz -vz -T0 -1 ${outputfilename}.img || true
+              ls ${oldfilename}.img.xz || exit 1
               oldfilename=$outputfilename 
               echo Old Filename is ${oldfilename}.img.xz
               AVer=$(echo $oldfilename | sed 's/Armbian-unofficial_\([^_]*\).*/\1/')
