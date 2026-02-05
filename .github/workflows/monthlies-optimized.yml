@@ -110,6 +110,7 @@ jobs:
       - name: Make device config file
         run: |
           mkdir userpatches
+          export device=${{ matrix.device }}
           for kernel in ${{ matrix.kernel }}; do
           export kernel=$kernel
           for os in ${{ matrix.os }}; do
@@ -181,7 +182,7 @@ jobs:
         #   max_attempts: 3
         #   command: |
         run: |
-            export CCACHE=1
+            # export CCACHE=1
             mkdir release
             export uid=$(id -u)
             export gid=$(id -g)
