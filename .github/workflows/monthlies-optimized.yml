@@ -160,10 +160,12 @@ jobs:
             for os in ${{ matrix.os }}; do
               export image=${{ matrix.device }}-${{ matrix.kernel }}-$os-${{ matrix.type }}
               ./compile.sh USE_CCACHE=yes EXPERT=yes PREFER_DOCKER=no ${image} || exit 1
-              outputfile=$(find output -name "*.img" -exec basename {} .img \;)
-              mv -vf output/${outputfile}.img release/
+              outputfilerelpath=$(find output -name "*.img" -exec echo -n {}\;)
+              outputfilename=$(basename -z $outputfilerelpath .img \;)
+              outputfilepath=$(realpath -z $outputfilerelpath)
+              mv -vf $outputfilepath/${outputfilename}.img release/
               cd release/
-              xz -vz -T0 -1 ${outputfile}.img || exit 1
+              xz -vz -T0 -1 ${outputfilename}.img || exit 1
               cd ..
             done
 
