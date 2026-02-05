@@ -142,10 +142,12 @@ jobs:
         with:
           path: ~/.ccache
           # key: ccache-${{ matrix.kernel }}-${{ matrix.os }}
-          key: ccache-${{ matrix.kernel }}
+          # key: ccache-${{ matrix.kernel }}
+          key: ccache-${{ matrix.device }}
           restore-keys: |
-            ccache-${{ matrix.kernel }}
+            ccache-${{ matrix.device }}
             ccache-
+
 
 
       - name: Build armbian-${{ matrix.device }}-${{ matrix.kernel }}-[${{ matrix.os }}]-${{ matrix.type }}.img
