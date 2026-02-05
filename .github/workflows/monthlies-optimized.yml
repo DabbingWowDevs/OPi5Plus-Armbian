@@ -110,12 +110,13 @@ jobs:
       - name: Make device config file
         run: |
           mkdir userpatches
+          for kernel in ${{ matrix.kernel }}; do
+          export kernel=$kernel
           for os in ${{ matrix.os }}; do
           export os=$os
+          for type in ${{ matrix.type }}; do
+          export type=$type
           echo "Creating userpatch for OS: $os"
-          device=${{ matrix.device }}
-          kernel=${{ matrix.kernel }}
-          type=${{ matrix.type }}
 
           configfile="userpatches/config-${device}-${kernel}-${os}-${type}.conf"
           
@@ -150,6 +151,8 @@ jobs:
           echo "Contents:"
           cat $configfile
           echo "-----"
+          done
+          done
           done
 
       - name: Set retry_wait_seconds for possible retry
