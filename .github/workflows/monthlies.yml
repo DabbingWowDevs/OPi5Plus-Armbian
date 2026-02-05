@@ -202,7 +202,7 @@ jobs:
       - uses: actions/checkout@v4
       - name: Update draft release body
         run: |
-          tag="opi3b-v${{ needs.get_build_date.outputs.build_date }}"
+          tag="${{ matrix.device }}-v${{ needs.get_build_date.outputs.build_date }}"
           assets=$(gh release view $tag --repo ${{ github.repository }} --json assets -q '.assets[].name')
           AVer=""
           current_kver=""
@@ -222,7 +222,7 @@ jobs:
               vendor_kver=$kver
             fi
           done
-          body="Image Picker: https://dabbingwowdevs.github.io/OPi3b-Armbian/
+          body="Image Picker: https://dabbingwowdevs.github.io/OPi5Plus-Armbian/
           Armbian Version: $AVer
           Kernel Versions:
           - Current: $current_kver
@@ -236,6 +236,6 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: Publish draft release
-        run: gh release edit opi3b-v${{ needs.get_build_date.outputs.build_date }} --draft=false
+        run: gh release edit ${{ matrix.device }}-v${{ needs.get_build_date.outputs.build_date }} --draft=false
     
 
