@@ -37,40 +37,40 @@ jobs:
     strategy:
       matrix:
         # test release
-        # device: [orangepi5-plus]
-        # kernel: [current]
-        # os: [trixie]
-        # type: [minimal] 
-
         device: [orangepi5-plus]
-        kernel: [current, edge, vendor]
+        kernel: [current]
         os: [trixie noble plucky]
-        type: [cinnamon, gnome, kde-plasma, minimal, xfce] # minimal, kde-neon, kde-plasma, i3-wm, mate
-        include:
-          - device: orangepi5-plus
-            kernel: current
-            os: noble
-            type: kde-neon
-          - device: orangepi5-plus
-            kernel: edge
-            os: noble
-            type: kde-neon
-          - device: orangepi5-plus
-            kernel: vendor
-            os: noble
-            type: kde-neon
-          - device: orangepi5-plus
-            kernel: current
-            os: trixie
-            type: mate
-          - device: orangepi5-plus
-            kernel: edge
-            os: trixie
-            type: mate
-          - device: orangepi5-plus
-            kernel: vendor
-            os: trixie
-            type: mate
+        type: [minimal] 
+
+        # device: [orangepi5-plus]
+        # kernel: [current, edge, vendor]
+        # os: [trixie noble plucky]
+        # type: [cinnamon, gnome, kde-plasma, minimal, xfce] # minimal, kde-neon, kde-plasma, i3-wm, mate
+        # include:
+        #   - device: orangepi5-plus
+        #     kernel: current
+        #     os: noble
+        #     type: kde-neon
+        #   - device: orangepi5-plus
+        #     kernel: edge
+        #     os: noble
+        #     type: kde-neon
+        #   - device: orangepi5-plus
+        #     kernel: vendor
+        #     os: noble
+        #     type: kde-neon
+        #   - device: orangepi5-plus
+        #     kernel: current
+        #     os: trixie
+        #     type: mate
+        #   - device: orangepi5-plus
+        #     kernel: edge
+        #     os: trixie
+        #     type: mate
+        #   - device: orangepi5-plus
+        #     kernel: vendor
+        #     os: trixie
+        #     type: mate
           
       fail-fast: false
     runs-on: ubuntu-latest
@@ -126,7 +126,6 @@ jobs:
           for os in ${{ matrix.os }}; do
             ./mkuserpatch.sh ${{ matrix.device }} ${{ matrix.kernel }} $os ${{ matrix.type }}
           done
-          mkdir release
           ls -l . userpatches
           #sleep 10
 
@@ -149,7 +148,6 @@ jobs:
             ccache-
 
 
-
       - name: Build armbian-${{ matrix.device }}-${{ matrix.kernel }}-[${{ matrix.os }}]-${{ matrix.type }}.img
         uses: nick-invision/retry@v2
         with:
@@ -158,42 +156,44 @@ jobs:
           max_attempts: 3
           command: |
             export CCACHE=1
+            mkdir compressed
+            mkdir release
             for os in ${{ matrix.os }}; do
               export image=${{ matrix.device }}-${{ matrix.kernel }}-$os-${{ matrix.type }}
               ./compile.sh USE_CCACHE=yes EXPERT=yes PREFER_DOCKER=no ${image} || exit 1
-              find output -name "*.img" -exec mv -vf {} release/ \;
+              find output -name "*.img" -exec mv -vf {} compressed/ \;
+              find compressed -name "*.img" -exec xz -vz -T0 -1 {} \; 
+              find compressed -name "*.img" -exec mv -vf {} release/ \; 
             done
-
 
       - name: add version and date
         id: set_ver
         run: |
-          
           cd release
           for os in ${{ matrix.os }}; do
             export image=${{ matrix.device }}-${{ matrix.kernel }}-$os-${{ matrix.type }}
-            for i in $(find . -name "*.img" -exec echo "{}" \;)
+            export os=$os
+            export extension="xz"
+            for i in $(find . -name "*.$extension" -exec echo "{}" \;)
             do
-              oldfilename=$i
-              extension=${oldfilename##*.}
               oldfilename=$(echo ${oldfilename%.*}|cut -d/ -f2-)
-              echo Filename is ${oldfilename}.${extension}
+              echo Filename is ${oldfilename}.img.${extension}
               AVer=$(echo $oldfilename | sed 's/Armbian-unofficial_\([^_]*\).*/\1/')
               echo 
               echo AVer: $AVer
               KVer=${{ matrix.kernel }}-$(echo $oldfilename | sed "s/.*_${{ matrix.kernel }}_\([^_]*\).*/\1/") 
               echo KVer: $KVer
-              filename=armbian-$(echo ${{ matrix.device }}-${{ matrix.os }}-${{ matrix.type }}-${AVer}-${KVer}-${{ needs.get_build_date.outputs.build_datedash }})
-              echo New Filename is ${filename}.${extension}
-              mv -vf "${oldfilename}.${extension}" "${filename}.${extension}"
+              filename=armbian-$(echo ${{ matrix.device }}-$os-${{ matrix.type }}-${AVer}-${KVer}-${{ needs.get_build_date.outputs.build_datedash }})
+              echo New Filename is ${filename}.img.${extension}
+              mv -vf "${oldfilename}.${extension}" "${filename}.img.${extension}"
             done
           cd ..
           ls release
           
-      - name: Compress armbian-${{ matrix.device }}-[${{ matrix.os }}]-${{ matrix.type }}.img
-        run: |
-          find release -name "*.img" -exec xz -vz -T0 -1 {} \;  
-          ls release #-6 --extreme
+      # - name: Compress armbian-${{ matrix.device }}-[${{ matrix.os }}]-${{ matrix.type }}.img
+      #   run: |
+      #     find release -name "*.img" -exec xz -vz -T0 -1 {} \;  
+      #     ls release #-6 --extreme
 
       - name: Release armbian-${{ matrix.device }}-[${{ matrix.os }}]-${{ matrix.type }}.img.xz
         uses: softprops/action-gh-release@v2
