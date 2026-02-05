@@ -114,7 +114,6 @@ jobs:
           wget -q -nv "$LatestArmbianURL" -O${LatestArmbianVer}.tar.gz
           tar --strip-components=1 -xf ${LatestArmbianVer}.tar.gz
           rm -f ${LatestArmbianVer}.tar.gz
-          git clone https://github.com/armbian/build .
       
       
       - name: Get device config file script
