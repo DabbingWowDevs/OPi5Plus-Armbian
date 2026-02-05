@@ -5,6 +5,15 @@ on:
   schedule:
     - cron: '20 9 14 * *'
   workflow_dispatch:
+    inputs:
+      branch:
+        description: 'Choose build branch'
+        required: true
+        default: 'trunk'
+        type: choice
+        options:
+          - trunk
+          - stable
 
 env:
     GH_TOKEN: ${{ github.token }}
@@ -27,41 +36,41 @@ jobs:
   build:
     strategy:
       matrix:
-        # # test release
-        # device: [opi3b]
-        # kernel: [edge]
-        # os: [bookworm]
-        # type: [minimal] 
-
+        # test release
         device: [orangepi5-plus]
-        kernel: [current, edge, vendor]
-        os: [trixie, noble, plucky]
-        type: [cinnamon, gnome, kde-plasma, xfce] # minimal, kde-neon, kde-plasma, i3-wm, mate
-        include:
-          - device: orangepi5-plus
-            kernel: current
-            os: noble
-            type: kde-neon
-          - device: orangepi5-plus
-            kernel: edge
-            os: noble
-            type: kde-neon
-          - device: orangepi5-plus
-            kernel: vendor
-            os: noble
-            type: kde-neon
-          - device: orangepi5-plus
-            kernel: current
-            os: trixie
-            type: mate
-          - device: orangepi5-plus
-            kernel: edge
-            os: trixie
-            type: mate
-          - device: orangepi5-plus
-            kernel: vendor
-            os: trixie
-            type: mate
+        kernel: [current]
+        os: [trixie]
+        type: [minimal] 
+
+        # device: [orangepi5-plus]
+        # kernel: [current, edge, vendor]
+        # os: [trixie, noble, plucky]
+        # type: [cinnamon, gnome, kde-plasma, minimal, xfce] # minimal, kde-neon, kde-plasma, i3-wm, mate
+        # include:
+        #   - device: orangepi5-plus
+        #     kernel: current
+        #     os: noble
+        #     type: kde-neon
+        #   - device: orangepi5-plus
+        #     kernel: edge
+        #     os: noble
+        #     type: kde-neon
+        #   - device: orangepi5-plus
+        #     kernel: vendor
+        #     os: noble
+        #     type: kde-neon
+        #   - device: orangepi5-plus
+        #     kernel: current
+        #     os: trixie
+        #     type: mate
+        #   - device: orangepi5-plus
+        #     kernel: edge
+        #     os: trixie
+        #     type: mate
+        #   - device: orangepi5-plus
+        #     kernel: vendor
+        #     os: trixie
+        #     type: mate
           
       fail-fast: false
     runs-on: ubuntu-latest
@@ -89,28 +98,31 @@ jobs:
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v3
 
-      - name: checkout armbian
+      - name: Prep for trunk
+        if: github.event.inputs.branch == 'trunk' || github.event_name == 'schedule'
         uses: actions/checkout@v4
         with:
           repository: armbian/build
           path: .
           
-      - name: checkout conf files
+      - name: Prep for stable
+        if: github.event.inputs.branch == 'stable'
+        run: |
+          export LatestArmbianVer=$(gh release list -R armbian/build |grep -v trunk | head -n1 |cut -f1)
+          export LatestArmbianURL=https://github.com/armbian/build/archive/refs/tags/${LatestArmbianVer}.tar.gz
+          echo LatestArmbianURL=$LatestArmbianURL
+          wget -q -nv "$LatestArmbianURL" -O${LatestArmbianVer}.tar.gz
+          tar --strip-components=1 -xf ${LatestArmbianVer}.tar.gz
+          rm -f ${LatestArmbianVer}.tar.gz
+          git clone https://github.com/armbian/build .
+      
+      
+      - name: Get device config file script
         uses: actions/checkout@v4
         with:
           path: thisrepo
-
-
-      - name: Prep
+      - name: Make device config file
         run: |
-          # export LatestArmbianVer=$(gh release list -R armbian/build |grep -v trunk | head -n1 |cut -f1)
-          # export LatestArmbianURL=https://github.com/armbian/build/archive/refs/tags/${LatestArmbianVer}.tar.gz
-          # echo LatestArmbianURL=$LatestArmbianURL
-          # wget -q -nv "$LatestArmbianURL" -O${LatestArmbianVer}.tar.gz
-          # tar --strip-components=1 -xf ${LatestArmbianVer}.tar.gz
-          # rm -f ${LatestArmbianVer}.tar.gz
-          # git clone https://github.com/armbian/build .
-
           mv thisrepo/mkuserpatch.sh .
           ./mkuserpatch.sh ${{ matrix.device }} ${{ matrix.kernel }} ${{ matrix.os }} ${{ matrix.type }}
           mkdir release
@@ -123,7 +135,6 @@ jobs:
           export retry_wait_seconds=$(shuf -i 5-145 -n 1)
           echo "retry_wait_seconds=$retry_wait_seconds" >> $GITHUB_OUTPUT
           echo retry_wait_seconds=$retry_wait_seconds
-
 
       - name: Cache ccache
         uses: actions/cache@v4
@@ -145,9 +156,8 @@ jobs:
             image=${{ matrix.device }}-${{ matrix.kernel }}-${{ matrix.os }}-${{ matrix.type }}
             #sleep ${{ steps.set_timeout.outputs.retry_wait_seconds }}
             export CCACHE=1
-            ./compile.sh USE_CCACHE=yes EXPERT=yes PREFER_DOCKER=no ${image} || true
+            ./compile.sh USE_CCACHE=yes EXPERT=yes PREFER_DOCKER=no ${image} || exit 1
             find output -name "*.img" -exec mv -vf {} release/ \;
-            ls release/*.img || exit 1
 
       - name: add version and date
         id: set_ver
