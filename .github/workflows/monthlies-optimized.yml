@@ -212,7 +212,7 @@ jobs:
               cd release/
               ls -l
               echo "Compressing ${outputfilename}.img to ${outputfilename}.img.xz"
-              xz -vz -T0 -1 ${outputfilename}.img || exit 1
+              xz -vz -T0 -1 ${outputfilename}.img 
               cd ..
             done
 
