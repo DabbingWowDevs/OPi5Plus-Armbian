@@ -198,11 +198,13 @@ jobs:
   update_release_body:
     runs-on: ubuntu-latest
     needs: [get_build_date, build]
+    env:
+      DEVICE: orangepi5-plus
     steps:
       - uses: actions/checkout@v4
       - name: Update draft release body
         run: |
-          tag="${{ matrix.device }}-v${{ needs.get_build_date.outputs.build_date }}"
+          tag="${{ env.DEVICE }}-v${{ needs.get_build_date.outputs.build_date }}"
           assets=$(gh release view $tag --repo ${{ github.repository }} --json assets -q '.assets[].name')
           AVer=""
           current_kver=""
@@ -233,9 +235,11 @@ jobs:
   publish:
     runs-on: ubuntu-latest
     needs: [get_build_date, build, update_release_body]
+    env:
+      DEVICE: orangepi5-plus
     steps:
       - uses: actions/checkout@v4
       - name: Publish draft release
-        run: gh release edit ${{ matrix.device }}-v${{ needs.get_build_date.outputs.build_date }} --draft=false
+        run: gh release edit ${{ env.DEVICE }}-v${{ needs.get_build_date.outputs.build_date }} --draft=false
     
 
