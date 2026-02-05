@@ -221,8 +221,8 @@ jobs:
               ls -l
               echo "Compressing ${outputfilename}.img to ${outputfilename}.img.xz"
               xz -vz -T0 -1 ${outputfilename}.img || true
-              ls ${oldfilename}.img.xz || exit 1
               oldfilename=$outputfilename 
+              ls ${oldfilename}.img.xz || exit 1
               echo Old Filename is ${oldfilename}.img.xz
               AVer=$(echo $oldfilename | sed 's/Armbian-unofficial_\([^_]*\).*/\1/')
               echo 
@@ -265,7 +265,7 @@ jobs:
       #     find release -name "*.img" -exec xz -vz -T0 -1 {} \;  
       #     ls release #-6 --extreme
 
-      - name: Release armbian-${{ matrix.device }}-[${{ matrix.os }}]-${{ matrix.type }}.img.xz
+      - name: Release armbian-[${{ matrix.device }}]-[${{ matrix.os }}]-[${{ matrix.type }}].img.xz
         uses: softprops/action-gh-release@v2
         with:
           files: release/*.img.xz
