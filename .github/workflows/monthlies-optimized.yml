@@ -116,18 +116,61 @@ jobs:
           rm -f ${LatestArmbianVer}.tar.gz
       
       
-      - name: Get device config file script
-        uses: actions/checkout@v4
-        with:
-          path: thisrepo
+      # - name: Get device config file script
+      #   uses: actions/checkout@v4
+      #   with:
+      #     path: thisrepo
+      # - name: Make device config file
+      #   run: |
+      #     mv thisrepo/mkuserpatch.sh .
+      #     for os in ${{ matrix.os }}; do
+      #       ./mkuserpatch.sh ${{ matrix.device }} ${{ matrix.kernel }} $os ${{ matrix.type }}
+      #     done
+      #     ls -l . userpatches
+      #     #sleep 10
       - name: Make device config file
         run: |
-          mv thisrepo/mkuserpatch.sh .
           for os in ${{ matrix.os }}; do
-            ./mkuserpatch.sh ${{ matrix.device }} ${{ matrix.kernel }} $os ${{ matrix.type }}
+          export os=$os
+          echo "Creating userpatch for OS: $os"
+          device=${{ matrix.device }}
+          kernel=${{ matrix.kernel }}
+          type=${{ matrix.type }}
+
+          configfile="userpatches/config-${device}-${kernel}-${os}-${type}.conf"
+          mkdir userpatches
+          cat << EOF > $configfile
+          KERNEL_CONFIGURE=no
+          #INSTALL_HEADERS=yes
+          SHARE_LOGS=no
+          KERNEL_GIT=shallow
+          BOARD=${device}
+
+          BRANCH=${kernel}
+
+          RELEASE=${os}
+
+          EOF
+          if [ "$type" == "minimal" ]; then
+          cat << EOF >> $configfile
+          BUILD_MINIMAL=yes
+          BUILD_DESKTOP=no
+          EOF
+          else
+          cat << EOF >> $configfile
+          BUILD_MINIMAL=no
+          BUILD_DESKTOP=yes
+          DESKTOP_APPGROUPS_SELECTED='browsers desktop_tools editors multimedia'
+          DESKTOP_ENVIRONMENT_CONFIG_NAME=config_base
+
+          DESKTOP_ENVIRONMENT=${type}
+          EOF
+          fi
+          echo "Created userpatch file: $configfile"
+          echo "Contents:"
+          cat $configfile
+          echo "-----"
           done
-          ls -l . userpatches
-          #sleep 10
 
       - name: Set retry_wait_seconds for possible retry
         id: set_timeout
@@ -161,11 +204,13 @@ jobs:
             for os in ${{ matrix.os }}; do
               export image=${{ matrix.device }}-${{ matrix.kernel }}-$os-${{ matrix.type }}
               ./compile.sh USE_CCACHE=yes EXPERT=yes PREFER_DOCKER=no ${image} || exit 1
-              outputfilerelpath=$(find output -name "*.img" -exec echo -n {}\;)
+              outputfilerelpath=$(find output -name "*.img" -exec echo -n {} \;)
               outputfilename=$(basename -z $outputfilerelpath .img \;)
               outputfilepath=$(realpath -z $outputfilerelpath)
               mv -vf $outputfilepath/${outputfilename}.img release/
               cd release/
+              ls -l
+              echo "Compressing ${outputfilename}.img to ${outputfilename}.img.xz"
               xz -vz -T0 -1 ${outputfilename}.img || exit 1
               cd ..
             done
