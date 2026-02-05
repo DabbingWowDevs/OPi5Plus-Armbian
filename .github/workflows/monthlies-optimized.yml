@@ -14,6 +14,14 @@ on:
         options:
           - trunk
           - stable
+      failhard:
+        description: 'build fail hard'
+        required: true
+        default: 'false'
+        type: choice
+        options:
+          - true
+          - false
 
 env:
     GH_TOKEN: ${{ github.token }}
@@ -184,6 +192,7 @@ jobs:
         run: |
             # export CCACHE=1
             mkdir release
+            [[ ${{ github.event.inputs.failhard }} ]] && export FailMode="exit 1" || export FailMode="true"
             export uid=$(id -u)
             export gid=$(id -g)
             sudo chown -R $uid:$gid release
@@ -195,7 +204,7 @@ jobs:
             export type=$type
               export image=${{ matrix.device }}-${kernel}-${os}-${type}
               # USE_CCACHE=yes
-              ./compile.sh EXPERT=yes ${image} || exit 1
+              ./compile.sh EXPERT=yes ${image} || ./compile.sh EXPERT=yes ${image} || ./compile.sh EXPERT=yes ${image} || $FailMode
               outputfilerelpath=$(find output -name "*.img" -exec echo -n {} \;)
               outputfilename=$(basename -z $outputfilerelpath .img)
               outputfilepath=$(realpath -z $outputfilerelpath)
