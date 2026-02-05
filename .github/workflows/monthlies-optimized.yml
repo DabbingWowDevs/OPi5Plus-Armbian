@@ -191,7 +191,6 @@ jobs:
             ccache-${{ matrix.device }}
             ccache-
 
-
       - name: Build armbian-${{ matrix.device }}-${{ matrix.kernel }}-[${{ matrix.os }}]-${{ matrix.type }}.img
         # uses: nick-invision/retry@v2
         # with:
@@ -202,8 +201,13 @@ jobs:
         run: |
             export CCACHE=1
             mkdir release
+            for kernel in ${{ matrix.kernel }}; do
+            export kernel=$kernel
             for os in ${{ matrix.os }}; do
-              export image=${{ matrix.device }}-${{ matrix.kernel }}-$os-${{ matrix.type }}
+            export os=$os
+            for type in ${{ matrix.type }}; do
+            export type=$type
+              export image=${{ matrix.device }}-${kernel}-${os}-${type}
               ./compile.sh USE_CCACHE=yes EXPERT=yes PREFER_DOCKER=no ${image} || exit 1
               outputfilerelpath=$(find output -name "*.img" -exec echo -n {} \;)
               outputfilename=$(basename -z $outputfilerelpath .img)
@@ -212,33 +216,44 @@ jobs:
               cd release/
               ls -l
               echo "Compressing ${outputfilename}.img to ${outputfilename}.img.xz"
-              xz -vz -T0 -1 ${outputfilename}.img 
-              cd ..
-            done
-
-
-      - name: add version and date
-        id: set_ver
-        run: |
-          export extension=img.xz
-          cd release
-          for os in ${{ matrix.os }}; do
-            export os=$os
-            for i in $(find . -name "*$os*.$extension" -exec echo "{}" \;)
-            do
-              oldfilename=$(basename $i .$extension)
-              echo Old Filename is ${oldfilename}.${extension}
+              xz -vz -T0 -1 ${outputfilename}.img
+              oldfilename=$outputfilename 
+              echo Old Filename is ${oldfilename}.img.xz
               AVer=$(echo $oldfilename | sed 's/Armbian-unofficial_\([^_]*\).*/\1/')
               echo 
               echo AVer: $AVer
-              KVer=${{ matrix.kernel }}-$(echo $oldfilename | sed "s/.*_${{ matrix.kernel }}_\([^_]*\).*/\1/") 
+              KVer=${kernel}-$(echo $oldfilename | sed "s/.*_${kernel}_\([^_]*\).*/\1/") 
               echo KVer: $KVer
-              filename=armbian-$(echo ${{ matrix.device }}-$os-${{ matrix.type }}-${AVer}-${KVer}-${{ needs.get_build_date.outputs.build_datedash }})
-              echo New Filename is ${filename}.${extension}
-              mv -vf "${oldfilename}.${extension}" "${filename}.${extension}"
+              filename=armbian-$(echo ${{ matrix.device }}-${os}-${type}-${AVer}-${KVer}-${{ needs.get_build_date.outputs.build_datedash }})
+              echo New Filename is ${filename}.img.xz
+              mv -vf "${oldfilename}.img.xz" "${filename}.img.xz"
+              cd ..
             done
-          cd ..
-          ls release
+            done
+            done
+
+      # - name: add version and date
+      #   id: set_ver
+      #   run: |
+      #     export extension=img.xz
+      #     cd release
+      #     for os in ${{ matrix.os }}; do
+      #       export os=$os
+      #       for i in $(find . -name "*$os*.$extension" -exec echo "{}" \;)
+      #       do
+      #         oldfilename=$(basename $i .$extension)
+      #         echo Old Filename is ${oldfilename}.${extension}
+      #         AVer=$(echo $oldfilename | sed 's/Armbian-unofficial_\([^_]*\).*/\1/')
+      #         echo 
+      #         echo AVer: $AVer
+      #         KVer=${{ matrix.kernel }}-$(echo $oldfilename | sed "s/.*_${{ matrix.kernel }}_\([^_]*\).*/\1/") 
+      #         echo KVer: $KVer
+      #         filename=armbian-$(echo ${{ matrix.device }}-$os-${{ matrix.type }}-${AVer}-${KVer}-${{ needs.get_build_date.outputs.build_datedash }})
+      #         echo New Filename is ${filename}.${extension}
+      #         mv -vf "${oldfilename}.${extension}" "${filename}.${extension}"
+      #       done
+      #     cd ..
+      #     ls release
           
       # - name: Compress armbian-${{ matrix.device }}-[${{ matrix.os }}]-${{ matrix.type }}.img
       #   run: |
