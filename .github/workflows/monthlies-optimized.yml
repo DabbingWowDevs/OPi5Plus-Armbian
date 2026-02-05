@@ -198,7 +198,7 @@ jobs:
               cd release/
               ls -l
               echo "Compressing ${outputfilename}.img to ${outputfilename}.img.xz"
-              xz -vz -T0 -1 ${outputfilename}.img || true
+              time xz -vz -T$(($(nproc) + 1)) -3 ${outputfilename}.img || true
               oldfilename=$outputfilename 
               ls ${oldfilename}.img.xz || exit 1
               echo Old Filename is ${oldfilename}.img.xz
