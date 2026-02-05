@@ -208,7 +208,7 @@ jobs:
               outputfilerelpath=$(find output -name "*.img" -exec echo -n {} \;)
               outputfilename=$(basename -z $outputfilerelpath .img)
               outputfilepath=$(realpath -z $outputfilerelpath)
-              mv -vf $outputfilepath/${outputfilename}.img release/
+              mv -vf $outputfilepath release/
               cd release/
               ls -l
               echo "Compressing ${outputfilename}.img to ${outputfilename}.img.xz"
