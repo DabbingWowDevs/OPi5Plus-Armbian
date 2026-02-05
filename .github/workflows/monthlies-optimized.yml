@@ -45,20 +45,18 @@ jobs:
     strategy:
       matrix:
         device: [orangepi5-plus]
-        kernel: [current, edge, vendor]
-        os: [trixie, noble, plucky]
-        type: [minimal cinnamon gnome kde-plasma xfce] # minimal, kde-neon, kde-plasma, i3-wm, mate
+        type: [minimal, cinnamon, gnome, kde-plasma, xfce]
+        kernel: [current edge vendor]
+        os: [trixie noble plucky]
         include:
           - device: orangepi5-plus
+            type: kde-neon
             kernel: current edge vendor
             os: noble
-            type: kde-neon
           - device: orangepi5-plus
+            type: mate
             kernel: current edge vendor
             os: trixie
-            type: mate
-
-          
       fail-fast: false
     runs-on: ubuntu-latest
     needs: get_build_date
@@ -101,20 +99,7 @@ jobs:
           wget -q -nv "$LatestArmbianURL" -O${LatestArmbianVer}.tar.gz
           tar --strip-components=1 -xf ${LatestArmbianVer}.tar.gz
           rm -f ${LatestArmbianVer}.tar.gz
-      
-      
-      # - name: Get device config file script
-      #   uses: actions/checkout@v4
-      #   with:
-      #     path: thisrepo
-      # - name: Make device config file
-      #   run: |
-      #     mv thisrepo/mkuserpatch.sh .
-      #     for os in ${{ matrix.os }}; do
-      #       ./mkuserpatch.sh ${{ matrix.device }} ${{ matrix.kernel }} $os ${{ matrix.type }}
-      #     done
-      #     ls -l . userpatches
-      #     #sleep 10
+
       - name: Make device config file
         run: |
           mkdir userpatches
@@ -204,7 +189,7 @@ jobs:
             export type=$type
               export image=${{ matrix.device }}-${kernel}-${os}-${type}
               # USE_CCACHE=yes
-              ./compile.sh EXPERT=yes ${image} || ./compile.sh EXPERT=yes ${image} || ./compile.sh EXPERT=yes ${image} || $FailMode
+              ./compile.sh EXPERT=yes CLEAN_LEVEL=images ${image} || ./compile.sh EXPERT=yes CLEAN_LEVEL=images ${image} || $FailMode
               outputfilerelpath=$(find output -name "*.img" -exec echo -n {} \;)
               outputfilename=$(basename -z $outputfilerelpath .img)
               outputfilepath=$(realpath -z $outputfilerelpath)
