@@ -127,7 +127,7 @@ jobs:
             ./mkuserpatch.sh ${{ matrix.device }} ${{ matrix.kernel }} $os ${{ matrix.type }}
           done
           mkdir release
-          ls -l
+          ls -l . userpatches
           #sleep 10
 
       - name: Set retry_wait_seconds for possible retry
@@ -157,7 +157,7 @@ jobs:
           command: |
             export CCACHE=1
             for os in ${{ matrix.os }}; do
-              export image=${{ matrix.device }}-${{ matrix.kernel }}-${{ matrix.os }}-${{ matrix.type }}
+              export image=${{ matrix.device }}-${{ matrix.kernel }}-$os-${{ matrix.type }}
               ./compile.sh USE_CCACHE=yes EXPERT=yes PREFER_DOCKER=no ${image} || exit 1
               find output -name "*.img" -exec mv -vf {} release/ \;
             done
