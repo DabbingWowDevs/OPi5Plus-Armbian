@@ -149,12 +149,13 @@ jobs:
 
 
       - name: Build armbian-${{ matrix.device }}-${{ matrix.kernel }}-[${{ matrix.os }}]-${{ matrix.type }}.img
-        uses: nick-invision/retry@v2
-        with:
-          timeout_minutes: 300
-          retry_wait_seconds: ${{ steps.set_timeout.outputs.retry_wait_seconds }}
-          max_attempts: 3
-          command: |
+        # uses: nick-invision/retry@v2
+        # with:
+        #   timeout_minutes: 300
+        #   retry_wait_seconds: ${{ steps.set_timeout.outputs.retry_wait_seconds }}
+        #   max_attempts: 3
+        #   command: |
+        run: |
             export CCACHE=1
             mkdir release
             for os in ${{ matrix.os }}; do
