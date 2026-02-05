@@ -206,7 +206,7 @@ jobs:
               export image=${{ matrix.device }}-${{ matrix.kernel }}-$os-${{ matrix.type }}
               ./compile.sh USE_CCACHE=yes EXPERT=yes PREFER_DOCKER=no ${image} || exit 1
               outputfilerelpath=$(find output -name "*.img" -exec echo -n {} \;)
-              outputfilename=$(basename -z $outputfilerelpath .img \;)
+              outputfilename=$(basename -z $outputfilerelpath .img)
               outputfilepath=$(realpath -z $outputfilerelpath)
               mv -vf $outputfilepath/${outputfilename}.img release/
               cd release/
