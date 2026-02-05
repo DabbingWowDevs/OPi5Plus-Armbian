@@ -201,6 +201,9 @@ jobs:
         run: |
             export CCACHE=1
             mkdir release
+            export uid=$(id -u)
+            export gid=$(id -g)
+            sudo chown -R $uid:$gid release
             for kernel in ${{ matrix.kernel }}; do
             export kernel=$kernel
             for os in ${{ matrix.os }}; do
@@ -213,6 +216,7 @@ jobs:
               outputfilename=$(basename -z $outputfilerelpath .img)
               outputfilepath=$(realpath -z $outputfilerelpath)
               mv -vf $outputfilepath release/
+              sudo chown -R $uid:$gid release
               cd release/
               ls -l
               echo "Compressing ${outputfilename}.img to ${outputfilename}.img.xz"
