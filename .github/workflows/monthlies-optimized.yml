@@ -47,7 +47,7 @@ jobs:
         device: [orangepi5-plus]
         type: [minimal, cinnamon, gnome, kde-plasma, xfce]
         kernel: [current edge vendor]
-        os: [trixie noble plucky]
+        os: [trixie, noble, plucky]
         include:
           - device: orangepi5-plus
             type: kde-neon
@@ -177,7 +177,7 @@ jobs:
         run: |
             # export CCACHE=1
             mkdir release
-            [[ ${{ github.event.inputs.failhard }} ]] && export FailMode="exit 1" || export FailMode="true"
+            [[ ${{ github.event.inputs.failhard }} ]] && export FailMode="exit 1" || export FailMode="continue"
             export uid=$(id -u)
             export gid=$(id -g)
             sudo chown -R $uid:$gid release
