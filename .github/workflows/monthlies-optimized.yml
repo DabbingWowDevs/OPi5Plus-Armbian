@@ -156,36 +156,37 @@ jobs:
           max_attempts: 3
           command: |
             export CCACHE=1
-            mkdir compressed
             mkdir release
             for os in ${{ matrix.os }}; do
               export image=${{ matrix.device }}-${{ matrix.kernel }}-$os-${{ matrix.type }}
               ./compile.sh USE_CCACHE=yes EXPERT=yes PREFER_DOCKER=no ${image} || exit 1
-              find output -name "*.img" -exec mv -vf {} compressed/ \;
-              find compressed -name "*.img" -exec xz -vz -T0 -1 {} \; 
-              find compressed -name "*.img" -exec mv -vf {} release/ \; 
+              outputfile=$(find output -name "*.img" -exec basename {} .img \;)
+              mv -vf output/${outputfile}.img release/
+              cd release/
+              xz -vz -T0 -1 ${outputfile}.img || exit 1
+              cd ..
             done
+
 
       - name: add version and date
         id: set_ver
         run: |
+          export extension=img.xz
           cd release
           for os in ${{ matrix.os }}; do
-            export image=${{ matrix.device }}-${{ matrix.kernel }}-$os-${{ matrix.type }}
             export os=$os
-            export extension="xz"
-            for i in $(find . -name "*.$extension" -exec echo "{}" \;)
+            for i in $(find . -name "*$os*.$extension" -exec echo "{}" \;)
             do
-              oldfilename=$(echo ${oldfilename%.*}|cut -d/ -f2-)
-              echo Filename is ${oldfilename}.img.${extension}
+              oldfilename=$(basename $i .$extension)
+              echo Old Filename is ${oldfilename}.${extension}
               AVer=$(echo $oldfilename | sed 's/Armbian-unofficial_\([^_]*\).*/\1/')
               echo 
               echo AVer: $AVer
               KVer=${{ matrix.kernel }}-$(echo $oldfilename | sed "s/.*_${{ matrix.kernel }}_\([^_]*\).*/\1/") 
               echo KVer: $KVer
               filename=armbian-$(echo ${{ matrix.device }}-$os-${{ matrix.type }}-${AVer}-${KVer}-${{ needs.get_build_date.outputs.build_datedash }})
-              echo New Filename is ${filename}.img.${extension}
-              mv -vf "${oldfilename}.${extension}" "${filename}.img.${extension}"
+              echo New Filename is ${filename}.${extension}
+              mv -vf "${oldfilename}.${extension}" "${filename}.${extension}"
             done
           cd ..
           ls release
