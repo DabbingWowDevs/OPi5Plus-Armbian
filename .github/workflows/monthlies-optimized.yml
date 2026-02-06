@@ -44,23 +44,23 @@ jobs:
   build:
     strategy:
       matrix:
-        device: [orangepi5-plus]
-        type: [kde-neon]
-        kernel: [current, edge, vendor]
-        os: [noble, plucky]
         # device: [orangepi5-plus]
-        # type: [minimal, cinnamon, gnome, kde-plasma, xfce]
-        # kernel: [current edge vendor]
-        # os: [trixie, noble, plucky]
-        # include:
-        #   - device: orangepi5-plus
-        #     type: kde-neon
-        #     kernel: current edge vendor
-        #     os: noble
-        #   - device: orangepi5-plus
-        #     type: mate
-        #     kernel: current edge vendor
-        #     os: trixie
+        # type: [kde-neon]
+        # kernel: [current, edge, vendor]
+        # os: [noble, plucky]
+        device: [orangepi5-plus]
+        type: [minimal, cinnamon, gnome, kde-plasma, xfce]
+        kernel: [current edge vendor]
+        os: [trixie, noble, plucky]
+        include:
+          - device: orangepi5-plus
+            type: kde-neon
+            kernel: current edge vendor
+            os: noble
+          - device: orangepi5-plus
+            type: mate
+            kernel: current edge vendor
+            os: trixie
       fail-fast: false
     runs-on: ubuntu-latest
     needs: get_build_date
@@ -202,7 +202,7 @@ jobs:
               cd release/
               ls -l
               echo "Compressing ${outputfilename}.img to ${outputfilename}.img.xz"
-              time xz -vz -T$(($(nproc) + 1)) -3 ${outputfilename}.img || true
+              time xz -vz -T$(($(nproc) + 2)) -3 ${outputfilename}.img || true
               oldfilename=$outputfilename 
               ls ${oldfilename}.img.xz || exit 1
               echo Old Filename is ${oldfilename}.img.xz
