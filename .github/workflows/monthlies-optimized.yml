@@ -80,11 +80,11 @@ jobs:
       #     docker-images: true
       #     swap-storage: true
 
-      - uses: thejerrybao/setup-swap-space@v1
-        with:
-          swap-space-path: /swapfile
-          swap-size-gb:  8
-          remove-existing-swap-files: false
+      # - uses: thejerrybao/setup-swap-space@v1
+      #   with:
+      #     swap-space-path: /swapfile
+      #     swap-size-gb:  8
+      #     remove-existing-swap-files: false
 
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v3
