@@ -45,14 +45,10 @@ jobs:
   build:
     strategy:
       matrix:
-        # device: [orangepi5-plus]
-        # type: [kde-neon]
-        # kernel: [current, edge, vendor]
-        # os: [noble, plucky]
         device: [orangepi5-plus]
         type: [minimal, cinnamon, gnome, kde-plasma, xfce]
         kernel: [current edge vendor]
-        os: [trixie, noble] #, plucky]
+        os: [trixie, noble]
         include:
           - device: orangepi5-plus
             type: kde-neon
@@ -110,50 +106,50 @@ jobs:
           mkdir userpatches
           export device=${{ matrix.device }}
           for kernel in ${{ matrix.kernel }}; do
-          export kernel=$kernel
-          for os in ${{ matrix.os }}; do
-          export os=$os
-          for type in ${{ matrix.type }}; do
-          export type=$type
-          echo "Creating userpatch for OS: $os"
+            export kernel=$kernel
+            for os in ${{ matrix.os }}; do
+              export os=$os
+              for type in ${{ matrix.type }}; do
+                export type=$type
+                echo "Creating userpatch for ${device}-${kernel}-${os}-${type}"
 
-          configfile="userpatches/config-${device}-${kernel}-${os}-${type}.conf"
-          
-          cat << EOF > $configfile
-          KERNEL_CONFIGURE=no
-          #INSTALL_HEADERS=yes
-          SHARE_LOGS=no
-          KERNEL_GIT=shallow
-          BOARD=${device}
+                configfile="userpatches/config-${device}-${kernel}-${os}-${type}.conf"
+                
+                cat << EOF > $configfile
+                KERNEL_CONFIGURE=no
+                #INSTALL_HEADERS=yes
+                SHARE_LOGS=no
+                KERNEL_GIT=shallow
+                BOARD=${device}
 
-          BRANCH=${kernel}
+                BRANCH=${kernel}
 
-          RELEASE=${os}
-          
-          ENABLE_EXTENSIONS="mesa-vpu"
+                RELEASE=${os}
+                
+                ENABLE_EXTENSIONS="mesa-vpu"
 
-          EOF
-          if [ "$type" == "minimal" ]; then
-          cat << EOF >> $configfile
-          BUILD_MINIMAL=yes
-          BUILD_DESKTOP=no
-          EOF
-          else
-          cat << EOF >> $configfile
-          BUILD_MINIMAL=no
-          BUILD_DESKTOP=yes
-          DESKTOP_APPGROUPS_SELECTED='browsers desktop_tools editors multimedia'
-          DESKTOP_ENVIRONMENT_CONFIG_NAME=config_base
+                EOF
+                if [ "$type" == "minimal" ]; then
+                cat << EOF >> $configfile
+                BUILD_MINIMAL=yes
+                BUILD_DESKTOP=no
+                EOF
+                else
+                cat << EOF >> $configfile
+                BUILD_MINIMAL=no
+                BUILD_DESKTOP=yes
+                DESKTOP_APPGROUPS_SELECTED='browsers desktop_tools editors multimedia'
+                DESKTOP_ENVIRONMENT_CONFIG_NAME=config_base
 
-          DESKTOP_ENVIRONMENT=${type}
-          EOF
-          fi
-          echo "Created userpatch file: $configfile"
-          echo "Contents:"
-          cat $configfile
-          echo "-----"
-          done
-          done
+                DESKTOP_ENVIRONMENT=${type}
+                EOF
+                fi
+                echo "Created userpatch file: $configfile"
+                echo "Contents:"
+                cat $configfile
+                echo "-----"
+              done
+            done
           done
 
       - name: Set retry_wait_seconds for possible retry
@@ -184,47 +180,41 @@ jobs:
         run: |
             # export CCACHE=1
             mkdir release
-            if [[ -n "${{ github.event.inputs.failhard }}" ]]; then
-                export FailMode="continue"
-            else
-                [[ "${{ github.event.inputs.failhard }}" ]] && export FailMode="exit 1" || export FailMode="continue"
-            fi
-            # [[ ${{ github.event.inputs.failhard }} ]] && export FailMode="exit 1" || export FailMode="continue"
             export uid=$(id -u)
             export gid=$(id -g)
             sudo chown -R $uid:$gid release
             for kernel in ${{ matrix.kernel }}; do
-            export kernel=$kernel
-            for os in ${{ matrix.os }}; do
-            export os=$os
-            for type in ${{ matrix.type }}; do
-            export type=$type
-              export image=${{ matrix.device }}-${kernel}-${os}-${type}
-              # USE_CCACHE=yes
-              ./compile.sh EXPERT=yes CLEAN_LEVEL=images ${image} || ./compile.sh EXPERT=yes CLEAN_LEVEL=images ${image} || $FailMode
-              outputfilerelpath=$(find output -name "*.img" -exec echo -n {} \;)
-              outputfilename=$(basename -z $outputfilerelpath .img)
-              outputfilepath=$(realpath -z $outputfilerelpath)
-              mv -vf $outputfilepath release/
-              sudo chown -R $uid:$gid release
-              cd release/
-              ls -l
-              echo "Compressing ${outputfilename}.img to ${outputfilename}.img.xz"
-              time xz -vz -T$(($(nproc) + 2)) -3 ${outputfilename}.img || true
-              oldfilename=$outputfilename 
-              ls ${oldfilename}.img.xz || exit 1
-              echo Old Filename is ${oldfilename}.img.xz
-              AVer=$(echo $oldfilename | sed 's/Armbian-unofficial_\([^_]*\).*/\1/')
-              echo 
-              echo AVer: $AVer
-              KVer=${kernel}-$(echo $oldfilename | sed "s/.*_${kernel}_\([^_]*\).*/\1/") 
-              echo KVer: $KVer
-              filename=armbian-$(echo ${{ matrix.device }}-${os}-${type}-${AVer}-${KVer}-${{ needs.get_build_date.outputs.build_datedash }})
-              echo New Filename is ${filename}.img.xz
-              mv -vf "${oldfilename}.img.xz" "${filename}.img.xz"
-              cd ..
-            done
-            done
+              export kernel=$kernel 
+              for os in ${{ matrix.os }}; do
+                export os=$os
+                for type in ${{ matrix.type }}; do
+                  export type=$type
+                  export image=${{ matrix.device }}-${kernel}-${os}-${type}
+                  # USE_CCACHE=yes
+                  ./compile.sh EXPERT=yes CLEAN_LEVEL=images ${image} 
+                  outputfilerelpath=$(find output -name "*.img" -exec echo -n {} \;)
+                  outputfilename=$(basename -z $outputfilerelpath .img)
+                  outputfilepath=$(realpath -z $outputfilerelpath)
+                  mv -vf $outputfilepath release/
+                  sudo chown -R $uid:$gid release
+                  cd release/
+                  ls -l
+                  echo "Compressing ${outputfilename}.img to ${outputfilename}.img.xz"
+                  time xz -vz -T$(($(nproc) + 2)) -3 ${outputfilename}.img || true
+                  oldfilename=$outputfilename 
+                  ls ${oldfilename}.img.xz || exit 1
+                  echo Old Filename is ${oldfilename}.img.xz
+                  AVer=$(echo $oldfilename | sed 's/Armbian-unofficial_\([^_]*\).*/\1/')
+                  echo 
+                  echo AVer: $AVer
+                  KVer=${kernel}-$(echo $oldfilename | sed "s/.*_${kernel}_\([^_]*\).*/\1/") 
+                  echo KVer: $KVer
+                  filename=armbian-$(echo ${{ matrix.device }}-${os}-${type}-${AVer}-${KVer}-${{ needs.get_build_date.outputs.build_datedash }})
+                  echo New Filename is ${filename}.img.xz
+                  mv -vf "${oldfilename}.img.xz" "${filename}.img.xz"
+                  cd ..
+                done
+              done
             done
 
       # - name: add version and date
