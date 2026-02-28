@@ -183,7 +183,12 @@ jobs:
         run: |
             # export CCACHE=1
             mkdir release
-            [[ ${{ github.event.inputs.failhard }} ]] && export FailMode="exit 1" || export FailMode="continue"
+            if [[ -n "${{ github.event.inputs.failhard }}" ]]; then
+                export FailMode="continue"
+            else
+                [[ "${{ github.event.inputs.failhard }}" ]] && export FailMode="exit 1" || export FailMode="continue"
+            fi
+            # [[ ${{ github.event.inputs.failhard }} ]] && export FailMode="exit 1" || export FailMode="continue"
             export uid=$(id -u)
             export gid=$(id -g)
             sudo chown -R $uid:$gid release
