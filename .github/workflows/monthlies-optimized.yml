@@ -51,7 +51,7 @@ jobs:
         device: [orangepi5-plus]
         type: [minimal, cinnamon, gnome, kde-plasma, xfce]
         kernel: [current edge vendor]
-        os: [trixie, noble, plucky]
+        os: [trixie, noble] #, plucky]
         include:
           - device: orangepi5-plus
             type: kde-neon
