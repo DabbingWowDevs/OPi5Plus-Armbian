@@ -120,36 +120,25 @@ jobs:
 
                 configfile="userpatches/config-${device}-${kernel}-${os}-${type}.conf"
                 
-                #cat << EOF -> $configfile
                 echo BOARD=${device} > $configfile
                 echo KERNEL_CONFIGURE=no >> $configfile
                 #echo INSTALL_HEADERS=yes >> $configfile
                 echo SHARE_LOGS=no >> $configfile
                 echo KERNEL_GIT=shallow >> $configfile
-                
-
                 echo BRANCH=${kernel} >> $configfile
-
                 echo RELEASE=${os} >> $configfile
-                
                 echo ENABLE_EXTENSIONS="mesa-vpu" >> $configfile
 
-                # EOF
-
                 if [ "$type" == "minimal" ]; then
-                #cat << EOF ->> $configfile
-                echo BUILD_MINIMAL=yes >> $configfile
-                echo BUILD_DESKTOP=no >> $configfile
-                #EOF
+                  echo BUILD_MINIMAL=yes >> $configfile
+                  echo BUILD_DESKTOP=no >> $configfile
                 else
-                #cat << EOF ->> $configfile
-                echo BUILD_MINIMAL=no >> $configfile
-                echo BUILD_DESKTOP=yes >> $configfile
-                echo DESKTOP_APPGROUPS_SELECTED='browsers desktop_tools editors multimedia' >> $configfile
-                echo DESKTOP_ENVIRONMENT_CONFIG_NAME=config_base >> $configfile
+                  echo BUILD_MINIMAL=no >> $configfile
+                  echo BUILD_DESKTOP=yes >> $configfile
+                  echo DESKTOP_APPGROUPS_SELECTED='browsers desktop_tools editors multimedia' >> $configfile
+                  echo DESKTOP_ENVIRONMENT_CONFIG_NAME=config_base >> $configfile
 
-                echo DESKTOP_ENVIRONMENT=${type} >> $configfile
-                #EOF
+                  echo DESKTOP_ENVIRONMENT=${type} >> $configfile
                 fi
 
                 echo "Created userpatch file: $configfile"
@@ -160,153 +149,135 @@ jobs:
             done
           done
 
-  #     # - name: Set retry_wait_seconds for possible retry
-  #     #   id: set_timeout
-  #     #   run: |
-  #     #     export retry_wait_seconds=$(shuf -i 5-145 -n 1)
-  #     #     echo "retry_wait_seconds=$retry_wait_seconds" >> $GITHUB_OUTPUT
-  #     #     echo retry_wait_seconds=$retry_wait_seconds
 
-  #     # - name: Cache ccache
-  #     #   uses: actions/cache@v4
-  #     #   with:
-  #     #     path: ~/.ccache
-  #     #     # key: ccache-${{ matrix.kernel }}-${{ matrix.os }}
-  #     #     # key: ccache-${{ matrix.kernel }}
-  #     #     key: ccache-${{ matrix.device }}
-  #     #     restore-keys: |
-  #     #       ccache-${{ matrix.device }}
-  #     #       ccache-
+      - name: Build armbian-${{ matrix.device }}-${{ matrix.kernel }}-[${{ matrix.os }}]-${{ matrix.type }}.img
+        run: |
+            # export CCACHE=1
+            mkdir release
+            export uid=$(id -u)
+            export gid=$(id -g)
+            sudo chown -R $uid:$gid release
+            for kernel in ${{ matrix.kernel }}; do
+              export kernel=$kernel 
+              for os in ${{ matrix.os }}; do
+                export os=$os
+                for type in ${{ matrix.type }}; do
+                  export type=$type
+                  export image=${{ matrix.device }}-${kernel}-${os}-${type}
 
-  #     - name: Build armbian-${{ matrix.device }}-${{ matrix.kernel }}-[${{ matrix.os }}]-${{ matrix.type }}.img
-  #       # uses: nick-invision/retry@v2
-  #       # with:
-  #       #   timeout_minutes: 300
-  #       #   retry_wait_seconds: ${{ steps.set_timeout.outputs.retry_wait_seconds }}
-  #       #   max_attempts: 3
-  #       #   command: |
-  #       run: |
-  #           # export CCACHE=1
-  #           mkdir release
-  #           export uid=$(id -u)
-  #           export gid=$(id -g)
-  #           sudo chown -R $uid:$gid release
-  #           for kernel in ${{ matrix.kernel }}; do
-  #             export kernel=$kernel 
-  #             for os in ${{ matrix.os }}; do
-  #               export os=$os
-  #               for type in ${{ matrix.type }}; do
-  #                 export type=$type
-  #                 export image=${{ matrix.device }}-${kernel}-${os}-${type}
-  #                 # USE_CCACHE=yes
-  #                 ./compile.sh EXPERT=yes CLEAN_LEVEL=images ${image} 
-  #                 outputfilerelpath=$(find output -name "*.img" -exec echo -n {} \;)
-  #                 outputfilename=$(basename -z $outputfilerelpath .img)
-  #                 outputfilepath=$(realpath -z $outputfilerelpath)
-  #                 mv -vf $outputfilepath release/
-  #                 sudo chown -R $uid:$gid release
-  #                 cd release/
-  #                 ls -l
-  #                 echo "Compressing ${outputfilename}.img to ${outputfilename}.img.xz"
-  #                 time xz -vz -T$(($(nproc) + 2)) -3 ${outputfilename}.img || true
-  #                 oldfilename=$outputfilename 
-  #                 ls ${oldfilename}.img.xz || exit 1
-  #                 echo Old Filename is ${oldfilename}.img.xz
-  #                 AVer=$(echo $oldfilename | sed 's/Armbian-unofficial_\([^_]*\).*/\1/')
-  #                 echo 
-  #                 echo AVer: $AVer
-  #                 KVer=${kernel}-$(echo $oldfilename | sed "s/.*_${kernel}_\([^_]*\).*/\1/") 
-  #                 echo KVer: $KVer
-  #                 filename=armbian-$(echo ${{ matrix.device }}-${os}-${type}-${AVer}-${KVer}-${{ needs.get_build_date.outputs.build_datedash }})
-  #                 echo New Filename is ${filename}.img.xz
-  #                 mv -vf "${oldfilename}.img.xz" "${filename}.img.xz"
-  #                 cd ..
-  #               done
-  #             done
-  #           done
+                  echo running ./compile.sh EXPERT=yes CLEAN_LEVEL=images ${image}
+                  ./compile.sh EXPERT=yes CLEAN_LEVEL=images ${image}  
+                  outputfilerelpath=$(find output -name "*.img" -exec echo -n {} \;)
+                  outputfilename=$(basename -z $outputfilerelpath .img)
+                  outputfilepath=$(realpath -z $outputfilerelpath)
+                  mv -vf $outputfilepath release/
+                  sudo chown -R $uid:$gid release
+                  cd release/
+                  ls -l
+                  echo "Compressing ${outputfilename}.img to ${outputfilename}.img.xz"
+                  time xz -vz -T$(($(nproc) + 2)) -3 ${outputfilename}.img || true
+                  oldfilename=$outputfilename 
+                  ls ${oldfilename}.img.xz || exit 1
+                  echo Old Filename is ${oldfilename}.img.xz
+                  AVer=$(echo $oldfilename | sed 's/Armbian-unofficial_\([^_]*\).*/\1/')
+                  echo 
+                  echo AVer: $AVer
+                  KVer=${kernel}-$(echo $oldfilename | sed "s/.*_${kernel}_\([^_]*\).*/\1/") 
+                  echo KVer: $KVer
+                  filename=armbian-$(echo ${{ matrix.device }}-${os}-${type}-${AVer}-${KVer}-${{ needs.get_build_date.outputs.build_datedash }})
+                  echo New Filename is ${filename}.img.xz
+                  mv -vf "${oldfilename}.img.xz" "${filename}.img.xz"
+                  cd ..
+                done
+              done
+            done
 
-  #     # - name: add version and date
-  #     #   id: set_ver
-  #     #   run: |
-  #     #     export extension=img.xz
-  #     #     cd release
-  #     #     for os in ${{ matrix.os }}; do
-  #     #       export os=$os
-  #     #       for i in $(find . -name "*$os*.$extension" -exec echo "{}" \;)
-  #     #       do
-  #     #         oldfilename=$(basename $i .$extension)
-  #     #         echo Old Filename is ${oldfilename}.${extension}
-  #     #         AVer=$(echo $oldfilename | sed 's/Armbian-unofficial_\([^_]*\).*/\1/')
-  #     #         echo 
-  #     #         echo AVer: $AVer
-  #     #         KVer=${{ matrix.kernel }}-$(echo $oldfilename | sed "s/.*_${{ matrix.kernel }}_\([^_]*\).*/\1/") 
-  #     #         echo KVer: $KVer
-  #     #         filename=armbian-$(echo ${{ matrix.device }}-$os-${{ matrix.type }}-${AVer}-${KVer}-${{ needs.get_build_date.outputs.build_datedash }})
-  #     #         echo New Filename is ${filename}.${extension}
-  #     #         mv -vf "${oldfilename}.${extension}" "${filename}.${extension}"
-  #     #       done
-  #     #     cd ..
-  #     #     ls release
+
+      - name: Release armbian-[${{ matrix.device }}]-[${{ matrix.os }}]-[${{ matrix.type }}].img.xz
+        uses: softprops/action-gh-release@v2
+        with:
+          files: release/*.img.xz
+          draft: true
+          fail_on_unmatched_files: true
+          name: build ${{ matrix.device }}-${{ needs.get_build_date.outputs.build_datedash }}
+          tag_name: ${{ matrix.device }}-v${{ needs.get_build_date.outputs.build_date }}
+    
+  update_release_body:
+    runs-on: ubuntu-latest
+    needs: [get_build_date, build]
+    env:
+      DEVICE: orangepi5-plus
+    steps:
+      - uses: actions/checkout@v4
+      - name: Update draft release body
+        run: |
+          tag="${{ env.DEVICE }}-v${{ needs.get_build_date.outputs.build_date }}"
+          assets=$(gh release view $tag --repo ${{ github.repository }} --json assets -q '.assets[].name')
+          AVer=""
+          current_kver=""
+          edge_kver=""
+          vendor_kver=""
+          for asset in $assets; do
+            if [ -z "$AVer" ]; then
+              AVer=$(echo $asset | sed 's/armbian-[^-]*-[^-]*-[^-]*-//' | sed 's/-\(current\|edge\|vendor\)-.*//')
+            fi
+            kver=$(echo $asset | sed 's/.*-\(current\|edge\|vendor\)-\([^-]*\)-.*-.*/\2/')
+            kernel_type=$(echo $asset | sed 's/.*-\(current\|edge\|vendor\)-\([^-]*\)-.*-.*/\1/')
+            if [[ $kernel_type == "current" ]]; then
+              current_kver=$kver
+            elif [[ $kernel_type == "edge" ]]; then
+              edge_kver=$kver
+            elif [[ $kernel_type == "vendor" ]]; then
+              vendor_kver=$kver
+            fi
+          done
+          body="Image Picker: https://dabbingwowdevs.github.io/OPi5Plus-Armbian/
+          Armbian Version: $AVer
+          Kernel Versions:
+          - Current: $current_kver
+          - Edge: $edge_kver
+          - Vendor: $vendor_kver"
+          gh release edit $tag --repo ${{ github.repository }} --notes "$body"
+    
+  publish:
+    runs-on: ubuntu-latest
+    needs: [get_build_date, build, update_release_body]
+    env:
+      DEVICE: orangepi5-plus
+    steps:
+      - uses: actions/checkout@v4
+      - name: Publish draft release
+        run: gh release edit ${{ env.DEVICE }}-v${{ needs.get_build_date.outputs.build_date }} --draft=false
+    
+
+
+
+
+
+      # - name: add version and date
+      #   id: set_ver
+      #   run: |
+      #     export extension=img.xz
+      #     cd release
+      #     for os in ${{ matrix.os }}; do
+      #       export os=$os
+      #       for i in $(find . -name "*$os*.$extension" -exec echo "{}" \;)
+      #       do
+      #         oldfilename=$(basename $i .$extension)
+      #         echo Old Filename is ${oldfilename}.${extension}
+      #         AVer=$(echo $oldfilename | sed 's/Armbian-unofficial_\([^_]*\).*/\1/')
+      #         echo 
+      #         echo AVer: $AVer
+      #         KVer=${{ matrix.kernel }}-$(echo $oldfilename | sed "s/.*_${{ matrix.kernel }}_\([^_]*\).*/\1/") 
+      #         echo KVer: $KVer
+      #         filename=armbian-$(echo ${{ matrix.device }}-$os-${{ matrix.type }}-${AVer}-${KVer}-${{ needs.get_build_date.outputs.build_datedash }})
+      #         echo New Filename is ${filename}.${extension}
+      #         mv -vf "${oldfilename}.${extension}" "${filename}.${extension}"
+      #       done
+      #     cd ..
+      #     ls release
           
-  #     # - name: Compress armbian-${{ matrix.device }}-[${{ matrix.os }}]-${{ matrix.type }}.img
-  #     #   run: |
-  #     #     find release -name "*.img" -exec xz -vz -T0 -1 {} \;  
-  #     #     ls release #-6 --extreme
-
-  #     - name: Release armbian-[${{ matrix.device }}]-[${{ matrix.os }}]-[${{ matrix.type }}].img.xz
-  #       uses: softprops/action-gh-release@v2
-  #       with:
-  #         files: release/*.img.xz
-  #         draft: true
-  #         fail_on_unmatched_files: true
-  #         name: build ${{ matrix.device }}-${{ needs.get_build_date.outputs.build_datedash }}
-  #         tag_name: ${{ matrix.device }}-v${{ needs.get_build_date.outputs.build_date }}
-    
-  # update_release_body:
-  #   runs-on: ubuntu-latest
-  #   needs: [get_build_date, build]
-  #   env:
-  #     DEVICE: orangepi5-plus
-  #   steps:
-  #     - uses: actions/checkout@v4
-  #     - name: Update draft release body
-  #       run: |
-  #         tag="${{ env.DEVICE }}-v${{ needs.get_build_date.outputs.build_date }}"
-  #         assets=$(gh release view $tag --repo ${{ github.repository }} --json assets -q '.assets[].name')
-  #         AVer=""
-  #         current_kver=""
-  #         edge_kver=""
-  #         vendor_kver=""
-  #         for asset in $assets; do
-  #           if [ -z "$AVer" ]; then
-  #             AVer=$(echo $asset | sed 's/armbian-[^-]*-[^-]*-[^-]*-//' | sed 's/-\(current\|edge\|vendor\)-.*//')
-  #           fi
-  #           kver=$(echo $asset | sed 's/.*-\(current\|edge\|vendor\)-\([^-]*\)-.*-.*/\2/')
-  #           kernel_type=$(echo $asset | sed 's/.*-\(current\|edge\|vendor\)-\([^-]*\)-.*-.*/\1/')
-  #           if [[ $kernel_type == "current" ]]; then
-  #             current_kver=$kver
-  #           elif [[ $kernel_type == "edge" ]]; then
-  #             edge_kver=$kver
-  #           elif [[ $kernel_type == "vendor" ]]; then
-  #             vendor_kver=$kver
-  #           fi
-  #         done
-  #         body="Image Picker: https://dabbingwowdevs.github.io/OPi5Plus-Armbian/
-  #         Armbian Version: $AVer
-  #         Kernel Versions:
-  #         - Current: $current_kver
-  #         - Edge: $edge_kver
-  #         - Vendor: $vendor_kver"
-  #         gh release edit $tag --repo ${{ github.repository }} --notes "$body"
-    
-  # publish:
-  #   runs-on: ubuntu-latest
-  #   needs: [get_build_date, build, update_release_body]
-  #   env:
-  #     DEVICE: orangepi5-plus
-  #   steps:
-  #     - uses: actions/checkout@v4
-  #     - name: Publish draft release
-  #       run: gh release edit ${{ env.DEVICE }}-v${{ needs.get_build_date.outputs.build_date }} --draft=false
-    
-
+      # - name: Compress armbian-${{ matrix.device }}-[${{ matrix.os }}]-${{ matrix.type }}.img
+      #   run: |
+      #     find release -name "*.img" -exec xz -vz -T0 -1 {} \;  
+      #     ls release #-6 --extreme
