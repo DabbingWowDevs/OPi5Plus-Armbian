@@ -141,7 +141,7 @@ jobs:
                 else
                   echo BUILD_MINIMAL=no >> $configfile
                   echo BUILD_DESKTOP=yes >> $configfile
-                  echo DESKTOP_APPGROUPS_SELECTED='browsers desktop_tools editors multimedia' >> $configfile
+                  echo DESKTOP_APPGROUPS_SELECTED=\'browsers desktop_tools editors multimedia\' >> $configfile
                   echo DESKTOP_ENVIRONMENT_CONFIG_NAME=config_base >> $configfile
 
                   echo DESKTOP_ENVIRONMENT=${type} >> $configfile
