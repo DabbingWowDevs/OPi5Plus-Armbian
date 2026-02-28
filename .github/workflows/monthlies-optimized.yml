@@ -95,6 +95,12 @@ jobs:
         with:
           repository: armbian/build
           path: .
+      - name: fix trunk -- remove rk3308-i2s-default-rate
+        if: github.event.inputs.branch == 'trunk' || github.event_name == 'schedule'
+        run: |
+          #patch/kernel/archive/rockchip64-6.18/rk3308-i2s-default-rate.patch
+          find patch/kernel -name rk3308-i2s-default-rate.patch -exec rm {} \;
+          
           
       - name: Prep for stable
         if: github.event.inputs.branch == 'stable'
