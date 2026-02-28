@@ -49,15 +49,7 @@ jobs:
         type: [minimal] #, cinnamon, gnome, kde-plasma, xfce]
         kernel: [current edge vendor]
         os: [noble] #[trixie, noble]
-        include:
-          - device: orangepi5-plus
-            type: kde-neon
-            kernel: current edge vendor
-            os: noble
-          - device: orangepi5-plus
-            type: mate
-            kernel: current edge vendor
-            os: trixie
+
         # device: [orangepi5-plus]
         # type: [minimal, cinnamon, gnome, kde-plasma, xfce]
         # kernel: [current edge vendor]
