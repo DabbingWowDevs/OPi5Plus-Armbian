@@ -3,7 +3,7 @@
 name: release Armbian monthly
 on:
   schedule:
-    - cron: '00 17 50 * *'
+    - cron: '55 17 28 * *'
     #- cron: '20 9 14 * *'
   workflow_dispatch:
     inputs:
