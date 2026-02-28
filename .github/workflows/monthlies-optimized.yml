@@ -52,7 +52,7 @@ jobs:
 
         # device: [orangepi5-plus]
         # type: [minimal, cinnamon, gnome, kde-plasma, xfce]
-        # kernel: [current edge vendor]
+        # kernel: [edge vendor] #current
         # os: [trixie, noble]
         # include:
         #   - device: orangepi5-plus
