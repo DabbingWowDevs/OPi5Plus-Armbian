@@ -121,34 +121,34 @@ jobs:
                 configfile="userpatches/config-${device}-${kernel}-${os}-${type}.conf"
                 
                 #cat << EOF -> $configfile
-                cat BOARD=${device} > $configfile
-                cat KERNEL_CONFIGURE=no >> $configfile
-                #cat INSTALL_HEADERS=yes >> $configfile
-                cat SHARE_LOGS=no >> $configfile
-                cat KERNEL_GIT=shallow >> $configfile
+                echo BOARD=${device} > $configfile
+                echo KERNEL_CONFIGURE=no >> $configfile
+                #echo INSTALL_HEADERS=yes >> $configfile
+                echo SHARE_LOGS=no >> $configfile
+                echo KERNEL_GIT=shallow >> $configfile
                 
 
-                cat BRANCH=${kernel} >> $configfile
+                echo BRANCH=${kernel} >> $configfile
 
-                cat RELEASE=${os} >> $configfile
+                echo RELEASE=${os} >> $configfile
                 
-                cat ENABLE_EXTENSIONS="mesa-vpu" >> $configfile
+                echo ENABLE_EXTENSIONS="mesa-vpu" >> $configfile
 
                 # EOF
 
                 if [ "$type" == "minimal" ]; then
                 #cat << EOF ->> $configfile
-                cat BUILD_MINIMAL=yes >> $configfile
-                cat BUILD_DESKTOP=no >> $configfile
+                echo BUILD_MINIMAL=yes >> $configfile
+                echo BUILD_DESKTOP=no >> $configfile
                 #EOF
                 else
                 #cat << EOF ->> $configfile
-                cat BUILD_MINIMAL=no >> $configfile
-                cat BUILD_DESKTOP=yes >> $configfile
-                cat DESKTOP_APPGROUPS_SELECTED='browsers desktop_tools editors multimedia' >> $configfile
-                cat DESKTOP_ENVIRONMENT_CONFIG_NAME=config_base >> $configfile
+                echo BUILD_MINIMAL=no >> $configfile
+                echo BUILD_DESKTOP=yes >> $configfile
+                echo DESKTOP_APPGROUPS_SELECTED='browsers desktop_tools editors multimedia' >> $configfile
+                echo DESKTOP_ENVIRONMENT_CONFIG_NAME=config_base >> $configfile
 
-                cat DESKTOP_ENVIRONMENT=${type} >> $configfile
+                echo DESKTOP_ENVIRONMENT=${type} >> $configfile
                 #EOF
                 fi
 
