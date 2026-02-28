@@ -45,24 +45,24 @@ jobs:
   build:
     strategy:
       matrix:
-        device: [orangepi5-plus]
-        type: [minimal] #, cinnamon, gnome, kde-plasma, xfce]
-        kernel: [edge vendor] #current
-        os: [noble] #[trixie, noble]
-
         # device: [orangepi5-plus]
-        # type: [minimal, cinnamon, gnome, kde-plasma, xfce]
+        # type: [minimal] #, cinnamon, gnome, kde-plasma, xfce]
         # kernel: [edge vendor] #current
-        # os: [trixie, noble]
-        # include:
-        #   - device: orangepi5-plus
-        #     type: kde-neon
-        #     kernel: current edge vendor
-        #     os: noble
-        #   - device: orangepi5-plus
-        #     type: mate
-        #     kernel: current edge vendor
-        #     os: trixie
+        # os: [noble] #[trixie, noble]
+
+        device: [orangepi5-plus]
+        type: [minimal, cinnamon, gnome, kde-plasma, xfce]
+        kernel: [edge vendor] #current
+        os: [trixie, noble]
+        include:
+          - device: orangepi5-plus
+            type: kde-neon
+            kernel: current edge vendor
+            os: noble
+          - device: orangepi5-plus
+            type: mate
+            kernel: current edge vendor
+            os: trixie
       fail-fast: false
     runs-on: ubuntu-latest
     needs: get_build_date
